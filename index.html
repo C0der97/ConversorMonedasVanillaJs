@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Conversor Monedas A Euros</h1>
+        <label>Digíte la cantidad a convertir</label>
+        <div class="col-md-4  mt-3">
+            <input id="valorCantidad" type="number" value="0" name="cantidad" placeholder="ingrese el numero de monedas" />
+        </div>
+        <label>Seleccione la Moneda de Origen</label>
+        <div id="selectMonedas" class="col-md-2  mt-3">
+
+        </div>
+        <div id="NombrePais" class="col-md-4  mt-3">
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
+    </script>
+    <script>
+        /*Api Utilizada https://fixer.io/documentation*/
+        function ConsultarApi(url) {
+            let Promesa = new Promise((resolve, reject) => {
+                fetch(url)
+                    .then(response => {
+                        resolve(response.json());
+                    }).catch(function (error) {
+                        console.log('Hubo un problema con la petición Fetch:' + error.message);
+                    });
+            })
+            return Promesa;
+        }
+        const token = "?access_key={YOUR_TOKEN_HERE}";
+        const uriConversion = "latest";
+        const uriSymbols = "symbols";
+        const url = "http://data.fixer.io/api/";
+        var SymbolosMonedas = [];
+        var ValoresEuroMonedas;
+        var MonedasEnEuros = ConsultarApi(url + uriConversion + token)
+        var Monedas = ConsultarApi(url + uriSymbols + token)
+
+        MonedasEnEuros.then((res) => {
+            ValoresEuroMonedas = res.rates;
+        })
+
+        Monedas.then((res) => {
+            let selectMonedas = document.getElementById('selectMonedas');
+            let select ='<select id="selectorMonedas" class="form-select" aria-label="Default select example"> <option selected>Seleccione una moneda</option>';
+            SymbolosMonedas = res.symbols;
+            let claves = Object.keys(SymbolosMonedas);
+            let longitud = claves.length;
+            let iteracion = 0;
+            for(iteracion;iteracion<longitud;iteracion++){
+                let clave = claves[iteracion];
+                let valor = SymbolosMonedas[claves[iteracion]];
+                select += `<option value=${clave} aria-label=${valor}>${clave}</option>`;
+            }
+            select += "</select>";
+            selectMonedas.innerHTML = select;
+            let selectorMonedas = document.getElementById('selectorMonedas');
+            selectorMonedas.addEventListener('change', function() {
+                let valor = this.value;
+                let pais = SymbolosMonedas[valor];
+                let valorMoneda = ValoresEuroMonedas[valor];
+                let NombrePais = document.getElementById("NombrePais");
+                let valorCantidad = document.getElementById("valorCantidad").value;
+                NombrePais.innerHTML = `<p> <strong>1 Euro en ${pais} es: ${valorMoneda}-${valor} </strong></p>`
+                NombrePais.innerHTML += `<p> <strong>${valorCantidad} ${pais}  en  Euros  es: ${valorCantidad/valorMoneda} </strong></p>`
+            });
+        })
+    </script>
+</body>
+
+</html>
